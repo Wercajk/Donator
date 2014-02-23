@@ -1,0 +1,34 @@
+{
+  "name": "Donator",
+  "version": "0.0.1",
+  "description": "Simple donation form",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Wercajk/Donator.git"
+  },
+  "keywords": [
+    "donate",
+    "donation",
+    "form"
+  ],
+  "author": "ElMarioFredo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Wercajk/Donator/issues"
+  },
+  "homepage": "https://github.com/Wercajk/Donator",
+  "dependencies": {
+    "nedb": "~0.10.3",
+    "co": "~3.0.2",
+    "thunkify": "0.0.1",
+    "koa": "~0.3.0",
+    "nodemailer": "~0.6.0",
+    "koa-params": "~1.1.0",
+    "koa-route": "~1.0.2",
+    "validator": "~3.2.1"
+  }
+}
