@@ -1,0 +1,9 @@
+{
+  "name": "Ohm Square",
+  "domain": "donate.ohmsquare.com",
+  "gmailAccount": "email@example.com",
+  "gmailPassword": "123456;)",
+  "donatorsDatabaseFile": "Donators",
+  "downloadText": "Download here",
+  "targetFile": "https://example.com/file.zip"
+}

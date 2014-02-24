@@ -1,14 +1,9 @@
-// Basic config
-var config = {
-  name: 'Ohm Square',
-  domain: 'donate.ohmsquare.com',
-  gmailAccount: 'some@thing.com',
-  gmailPassword: '123456;)',
-  donatorsDatabaseFile: 'Donators',
-  downloadText: 'Download our new album here'
-}
+// Config
+var cwd = process.cwd()+'/';
+var config = require(cwd+'config.json');
 
 var koa = require('koa');
+var _ = require('lodash-node');
 
 var thunkify = require('thunkify');
 
@@ -25,11 +20,13 @@ var Datastore = require('nedb');
 var db = new Datastore({ filename: config.donatorsDatabaseFile });
 db.loadDatabase();
 
-var dbFind = thunkify(db.find);
+var cors = require('koa-cors');
 
 var app = koa();
 
+app.use(cors());
 
+// Setup params
 param('email', function*(email, next){
 
   // Validate email address
@@ -60,7 +57,7 @@ param('download', function*(donator_id, next){
 });
 
 
-// create reusable transport method (opens pool of SMTP connections)
+// Create reusable transport method (opens pool of SMTP connections)
 var smtpTransport = nodemailer.createTransport("SMTP",{
     service: "Gmail",
     auth: {
@@ -69,24 +66,28 @@ var smtpTransport = nodemailer.createTransport("SMTP",{
     }
 });
 
+
 // Root response
 app.use(get('/', function*(){
-  this.body = '<html><body><h1>Thank you for using Donator <a href="https://github.com/Wercajk/Donator">https://github.com/Wercajk/Donator</a></h1></body>';
+  this.body = '<html><body><h1>Thank you for using Donator <a href="https://github.com/Wercajk/Donator">https://github.com/Wercajk/Donator</a></h1></body></html>';
 }));
 
-app.use(get('/:download', function(){
 
-  var my = this;
-  var body = {}
+var getDonorThunk = function (id, callback) {
+  return function(callback) {
+    db.find({_id: id}, callback);
+  };
+}
 
-  // Finding all planets in the solar system
-  // var doc = yield dbFind({ email: 'mario@vejlupek.cz' });
-  db.find({ email: 'mario@vejlupek.cz' }, function(err, doc){
-    console.log(doc)
-    body = doc;
-  });
+app.use(get('/:download', function *(){
 
-  this.body = body;
+  var donors = yield getDonorThunk(this.donator_id);
+
+  if ( donors[0] !== undefined ) {
+    this.redirect(config.targetFile);
+  } else {
+    console.log(donors)
+  }
 
 }));
 
@@ -104,7 +105,6 @@ var buildEmailOptions = function (email, amount, id) {
   };
 }
 
-
 app.use(get('/:email/:amount', function*(){
 
   var data = {
@@ -117,7 +117,7 @@ app.use(get('/:email/:amount', function*(){
   db.insert(data, function(err, doc){
 
     // send mail with defined transport object
-    smtpTransport.sendMail(buildEmailOptions(this.email, this.amount, doc._id), function(error, response){
+    smtpTransport.sendMail(buildEmailOptions(data.email, data.amount, doc._id), function(error, response){
 
       if(error){
         console.log(error);
@@ -130,10 +130,9 @@ app.use(get('/:email/:amount', function*(){
 
   });
 
-
-
-
-  this.body = {done: true};
+  if ( this.amount > 0 ) {
+    this.body = '<html><head><script type="text/javascript">setTimeout(function(){window.location="'+ config.targetFile +'";}, 3000);</script><title>Thank you!</title></head><body><h1>Payment was successful... download will begin shortly.</h1></body></html>';
+  }
 
 }));
 
